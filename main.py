@@ -7,9 +7,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 SOURCE_IMAGES_PREFIX="https://img.izismile.com/img/img2/20090821/smoking_kids"
 IZISMILE_SOURCE_RANGE=50
 
-collatedlist = []
 
 def build_izi_image_list() -> list:
+    collatedlist = []
+
     for i in range(0, IZISMILE_SOURCE_RANGE):
         # Ignore #19, kid is too inappropriate
         if verify_image_exists(SOURCE_IMAGES_PREFIX+f"_{str(i).zfill(2)}.jpg") and i != 19:
@@ -22,8 +23,7 @@ def verify_image_exists(url: str) -> bool:
         # logging.info(f"IMAGE Found: {url}")
         return response.status_code == 200
     except requests.RequestException:
-        logging.warning(f"NO IMAGE FOUND: {SOURCE_IMAGES_PREFIX+f"_{str(i).zfill(2)}.jpg"}")
-        return 
+        return False
 
 def inspirational_quote() -> tuple[str, str]:
     try:
@@ -37,9 +37,9 @@ def inspirational_quote() -> tuple[str, str]:
     return data[0]["q"], data[0]["a"]
 
 def main():
-    random_image_url = random.randint(0, IZISMILE_SOURCE_RANGE-2)
     webhook_urls = get_env_data_as_dict('.env').get("WEBHOOK_URL").split(',')
     izi_image_list = build_izi_image_list()
+    random_image_url = random.randint(0, len(izi_image_list)-1)
     image = izi_image_list[random_image_url]
     quote, author = inspirational_quote()
     logging.info(f"{image, quote, author}")
