@@ -11,7 +11,8 @@ collatedlist = []
 
 def build_izi_image_list() -> list:
     for i in range(0, IZISMILE_SOURCE_RANGE):
-        if verify_image_exists(SOURCE_IMAGES_PREFIX+f"_{str(i).zfill(2)}.jpg"):
+        # Ignore #19, kid is too inappropriate
+        if verify_image_exists(SOURCE_IMAGES_PREFIX+f"_{str(i).zfill(2)}.jpg") and i != 19:
             collatedlist.insert(1, SOURCE_IMAGES_PREFIX+f"_{str(i).zfill(2)}.jpg")
     return collatedlist
 
@@ -37,7 +38,7 @@ def inspirational_quote() -> tuple[str, str]:
 
 def main():
     random_image_url = random.randint(0, IZISMILE_SOURCE_RANGE-2)
-    webhook_url = get_env_data_as_dict('.env').get("WEBHOOK_URL")
+    webhook_urls = get_env_data_as_dict('.env').get("WEBHOOK_URL").split(',')
     izi_image_list = build_izi_image_list()
     image = izi_image_list[random_image_url]
     quote, author = inspirational_quote()
@@ -52,7 +53,8 @@ def main():
         ]
     }
 
-    requests.post(webhook_url, json=payload)
+    for webhook_url in webhook_urls:
+        requests.post(webhook_url, json=payload)
 
 ### Helper Funcs
 def get_env_data_as_dict(path: str) -> dict:
